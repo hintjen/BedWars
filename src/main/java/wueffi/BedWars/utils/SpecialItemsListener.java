@@ -58,8 +58,15 @@ public class SpecialItemsListener implements Listener {
         if (event.getHand() != EquipmentSlot.HAND) {
             return;
         }
-        if (Objects.requireNonNull(event.getItem()).getType() == Material.EGG) eggThrow(event);
-        if (event.getItem() == null || event.getItem().getType() != Material.FIRE_CHARGE) {
+
+        ItemStack item = event.getItem();
+        if (item == null) return;
+
+        if (item.getType() == Material.EGG) {
+            eggThrow(event);
+            return;
+        }
+        if (item.getType() != Material.FIRE_CHARGE) {
             return;
         }
 
@@ -76,7 +83,6 @@ public class SpecialItemsListener implements Listener {
         }
 
         event.setCancelled(true);
-        ItemStack item = event.getItem();
         if (item.getAmount() > 1) {
             item.setAmount(item.getAmount() - 1);
         } else {
