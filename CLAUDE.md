@@ -26,6 +26,10 @@ server in the background, and spawns filler bots so a full match can start with 
   so the host bot waits for the real player and ops them before starting.
 - **Bots:** `tools/bots/swarm.js` (mineflayer). `node tools/bots/swarm.js --count 3 --human <name>`.
   Default 3 bots + 1 human = one per team. The server runs `online-mode=false` to allow them.
+- **Cross-platform one-command launcher:** `node tools/playtest.js --human <name>` builds + starts the
+  server, waits for ready, starts the bots, and shuts everything down cleanly on Ctrl+C (sends `stop`
+  to the server console). Works on Windows/macOS/Linux — it's the portable equivalent of the Unix-only
+  `launch` skill. Windows setup/build details live in [BUILDING-Windows.md](BUILDING-Windows.md).
 
 ## How a match works (for debugging)
 
