@@ -28,6 +28,9 @@
 Notes:
 - **Gradle is not required** — the included wrapper (`gradlew` / `gradlew.bat`) downloads the right
   version automatically.
+- **The JDK is auto-provisioned per build profile** — you need *a* JDK installed to launch Gradle, but
+  Gradle's toolchain (via the foojay resolver) downloads the exact JDK each profile needs: **Java 21**
+  for the default 1.21.x build, **Java 25** for the `-Pmc=26.x` build (Minecraft 26.x requires Java 25).
 - **MiniGameCore is vendored** in `libs/`, so no extra downloads are needed to build.
 - **Internet access** is needed on the first build/run (Gradle, the Paper API, Paper itself, and—for
   playtesting—the npm bot deps).
@@ -57,9 +60,14 @@ Verify with `java -version` (should show 21.x) and, for playtesting, `node -vers
 ## 🛠️ Building from source
 
 ```bash
-./gradlew build          # macOS/Linux  -> build/libs/BedWars-1.0.jar
-.\gradlew.bat build      # Windows
+./gradlew build                 # default: Minecraft 1.21.9 / Java 21  -> build/libs/BedWars-1.0.jar
+./gradlew build -Pmc=26.1.2     # modern target: Minecraft 26.1.2 / Java 25 (auto-downloaded)
+.\gradlew.bat build             # Windows (same flags apply)
 ```
+
+The `-Pmc` flag selects the build profile (default `1.21.9`). The 1.21.x profile keeps the
+mineflayer bot dev-loop working; the 26.x profile builds against the latest Paper API on Java 25.
+A 26.x jar (Java 25) won't run on a 1.21.x/Java 21 server — they're separate builds.
 
 - **Windows users:** see **[BUILDING-Windows.md](BUILDING-Windows.md)** for step-by-step setup.
 - **Local playtesting (any OS):** `node tools/playtest.js --human <YourMinecraftName>` builds, starts

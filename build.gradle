@@ -6,6 +6,18 @@ plugins {
 group = 'wueffi'
 version = '1.0'
 
+// --- Target Minecraft profile (switchable) -------------------------------------------------------
+// Default: 1.21.9 on Java 21 — keeps the mineflayer bot dev-loop working (mineflayer can't speak the
+// 26.x protocol yet). Build the modern target with:  ./gradlew build -Pmc=26.1.2  (Java 25).
+// A 26.x jar (Java 25) cannot run on a 1.21.x/Java-21 server, so the two tracks are separate builds.
+def mc = (project.findProperty('mc') ?: '1.21.9').toString()
+def isModern = mc.startsWith('26')
+def targetJavaVersion = isModern ? 25 : 21
+def paperApiCoord = isModern
+        ? "io.papermc.paper:paper-api:${mc}.build.+"        // new build-suffixed scheme (e.g. 26.1.2.build.72-stable)
+        : "io.papermc.paper:paper-api:${mc}-R0.1-SNAPSHOT"
+logger.lifecycle("BedWars profile: Minecraft ${mc} (Java ${targetJavaVersion}) -> ${paperApiCoord}")
+
 repositories {
     mavenCentral()
     maven {
@@ -16,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly(paperApiCoord)
     // MiniGameCore is provided at runtime as a separate Paper plugin. It is vendored locally
     // (libs/) because its JitPack snapshot does not publish a resolvable jar.
     compileOnly files('libs/MiniGameCore-2.0.1.jar')
@@ -33,10 +45,10 @@ test {
 
 tasks {
     runServer {
-        // The Minecraft version for the dev server. Your plugin's jar is added automatically.
-        // Must be >= 1.21.6: MiniGameCore 2.0.1 uses the GameRule.LOCATOR_BAR field added in 1.21.6,
-        // so older servers throw NoSuchFieldError on `/mg host`. The human client must match this.
-        minecraftVersion("1.21.9")
+        // Dev server version follows the active profile (-Pmc). Your plugin's jar is added
+        // automatically. NOTE: run-paper 2.3.1 targets the 1.21.x line; running a 26.x server needs
+        // a newer run-paper (a later step). The 26.x profile is currently for building/compiling.
+        minecraftVersion(mc)
 
         // BedWars needs MiniGameCore at runtime. pluginJars copies it into run/plugins/ on every
         // launch (run-paper 2.3.1 API), so a fresh `./gradlew runServer` is always self-contained.
@@ -74,22 +86,17 @@ tasks {
     }
 }
 
-def targetJavaVersion = 21
 java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    // Use a toolchain so Gradle selects (and, via the foojay resolver in settings.gradle,
+    // auto-downloads) the right JDK for the active profile — Java 21 for 1.21.x, Java 25 for 26.x.
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        options.release.set(targetJavaVersion)
-    }
+    options.release.set(targetJavaVersion)
 }
 
 processResources {
