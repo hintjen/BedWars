@@ -9,11 +9,14 @@ commands — it reacts to MiniGameCore's `GameStartEvent`/`GameOverEvent`.
 - `./gradlew build` — compiles, runs unit tests, produces `build/libs/BedWars-1.0.jar`.
 - `./gradlew test` — runs the unit tests (currently the win/elimination logic in `WinEvaluatorTest`).
 - **Build profiles (`-Pmc`):** default `1.21.9` (Java 21, keeps the mineflayer bot loop working);
-  `-Pmc=26.1.2` targets the latest Minecraft on **Java 25**. Gradle auto-downloads the matching JDK
+  `-Pmc=26.2` targets the latest Minecraft on **Java 25**. Gradle auto-downloads the matching JDK
   via the foojay toolchain resolver (`settings.gradle`). A 26.x jar (Java 25) can't run on a
   1.21.x/Java-21 server, so the tracks are separate builds. `build.gradle` derives the Java version
-  and `paper-api` coordinate from `-Pmc`. NOTE: running a 26.x dev server still needs a `run-paper`
-  upgrade (2.3.1 → 3.x) — not done yet; the 26.x profile currently covers build/compile only.
+  and `paper-api` coordinate from `-Pmc`.
+- **Running a 26.x dev server:** `./gradlew runServer -Pmc=26.2 -PdevOp=<YourName>` boots a Paper
+  26.2 server on Java 25 (needs `run-paper` 3.x + Gradle 8.14.3, already configured). `-PdevOp` ops a
+  human player in `ops.json` (the bots can't connect to 26.x to op you, since mineflayer has no 26.x
+  protocol yet — so the auto-bot match flow stays on the 1.21.x profile).
 - MiniGameCore is vendored at `libs/MiniGameCore-2.0.1.jar` (its JitPack snapshot doesn't publish a
   resolvable jar), wired as `compileOnly`. To upgrade it, drop the new jar in `libs/` and update the
   filename in `build.gradle`.

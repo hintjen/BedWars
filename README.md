@@ -61,7 +61,7 @@ Verify with `java -version` (should show 21.x) and, for playtesting, `node -vers
 
 ```bash
 ./gradlew build                 # default: Minecraft 1.21.9 / Java 21  -> build/libs/BedWars-1.0.jar
-./gradlew build -Pmc=26.1.2     # modern target: Minecraft 26.1.2 / Java 25 (auto-downloaded)
+./gradlew build -Pmc=26.2       # modern target: Minecraft 26.2 / Java 25 (auto-downloaded)
 .\gradlew.bat build             # Windows (same flags apply)
 ```
 

@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id("xyz.jpenilla.run-paper") version "2.3.1"
+    // 3.x uses Paper's Fill v3 download API, required to fetch 26.x server builds.
+    id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
 group = 'wueffi'
@@ -45,16 +46,16 @@ test {
 
 tasks {
     runServer {
-        // Dev server version follows the active profile (-Pmc). Your plugin's jar is added
-        // automatically. NOTE: run-paper 2.3.1 targets the 1.21.x line; running a 26.x server needs
-        // a newer run-paper (a later step). The 26.x profile is currently for building/compiling.
+        // Dev server version follows the active profile (-Pmc): 1.21.9 by default, 26.1.2 with
+        // -Pmc=26.1.2. Your plugin's jar is added automatically; the toolchain JDK (21 or 25) is
+        // used to launch the server.
         minecraftVersion(mc)
 
         // BedWars needs MiniGameCore at runtime. pluginJars copies it into run/plugins/ on every
-        // launch (run-paper 2.3.1 API), so a fresh `./gradlew runServer` is always self-contained.
+        // launch, so a fresh `./gradlew runServer` is always self-contained.
         pluginJars(file("libs/MiniGameCore-2.0.1.jar"))
 
-        // run-paper 2.3.1 has no EULA / server.properties DSL, so seed the run dir ourselves.
+        // run-paper has no EULA / server.properties DSL, so seed the run dir ourselves.
         // This makes the server start unattended (EULA accepted) and joinable by offline bots.
         doFirst {
             def runDir = runDirectory.get().asFile
@@ -77,6 +78,10 @@ tasks {
             // Op the dev bots so they can drive a match. Offline-mode UUIDs are computed exactly like
             // Bukkit's getOfflinePlayer(name). The host bot ops the human player at runtime via /op.
             def opNames = ["BW_Host"] + (1..12).collect { "BW_Bot${it}" }
+            // Also op a human dev player when requested, e.g. -PdevOp=HomerunDesktop. Needed on the
+            // 26.x track where the bots (which normally /op the human) can't connect yet.
+            def devOp = project.findProperty('devOp')
+            if (devOp) opNames = opNames + devOp.toString()
             def opEntries = opNames.collect { n ->
                 def uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + n).getBytes("UTF-8")).toString()
                 "  {\"uuid\": \"${uuid}\", \"name\": \"${n}\", \"level\": 4, \"bypassesPlayerLimit\": false}"
