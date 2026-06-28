@@ -8,16 +8,23 @@ import wueffi.MiniGameCore.api.MiniGameCoreAPI;
 import wueffi.MiniGameCore.utils.Lobby;
 import wueffi.MiniGameCore.utils.Team;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
 public class checkWins {
     private final Plugin plugin;
     private BukkitRunnable checkTask;
     private final Lobby lobby;
     private final BedChecker bedChecker;
+    private final EliminationTracker eliminationTracker;
 
-    public checkWins(Plugin plugin, Lobby lobby, BedChecker bedChecker) {
+    public checkWins(Plugin plugin, Lobby lobby, BedChecker bedChecker, EliminationTracker eliminationTracker) {
         this.plugin = plugin;
         this.lobby = lobby;
         this.bedChecker = bedChecker;
+        this.eliminationTracker = eliminationTracker;
     }
 
     public void startChecking() {
@@ -25,23 +32,35 @@ public class checkWins {
             @Override
             public void run() {
                 playerUnderYZero(lobby);
-                int aliveTeams = 0;
-                Team lastAliveTeam = null;
 
+                List<WinEvaluator.TeamView<Team>> views = new ArrayList<>();
                 for (Team team : lobby.getTeamList()) {
-                    int teamAliveCount = 0;
-                    if (team.getAlivePlayers() > 0 || bedChecker.getBedStatus().getOrDefault(team.getColor(), false)) {
-                        teamAliveCount++;
-                        lastAliveTeam = team;
+                    boolean bedIntact = bedChecker.getBedStatus().getOrDefault(team.getColor(), false);
+                    List<UUID> memberIds = new ArrayList<>();
+                    for (Player member : team.getPlayers()) {
+                        memberIds.add(member.getUniqueId());
                     }
+                    views.add(new WinEvaluator.TeamView<Team>() {
+                        @Override
+                        public Team team() {
+                            return team;
+                        }
 
-                    if (teamAliveCount > 0) {
-                        aliveTeams++;
-                    }
+                        @Override
+                        public Collection<UUID> memberIds() {
+                            return memberIds;
+                        }
+
+                        @Override
+                        public boolean bedIntact() {
+                            return bedIntact;
+                        }
+                    });
                 }
 
-                if (aliveTeams == 1 && lastAliveTeam != null) {
-                    MiniGameCoreAPI.winTeam(lobby, lastAliveTeam);
+                Team winner = WinEvaluator.findWinner(views, eliminationTracker.eliminated());
+                if (winner != null) {
+                    MiniGameCoreAPI.winTeam(lobby, winner);
                     stopChecking();
                 }
             }

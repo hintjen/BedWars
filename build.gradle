@@ -17,15 +17,60 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    implementation 'com.github.Wueffi:MiniGameCore:master-SNAPSHOT'
+    // MiniGameCore is provided at runtime as a separate Paper plugin. It is vendored locally
+    // (libs/) because its JitPack snapshot does not publish a resolvable jar.
+    compileOnly files('libs/MiniGameCore-2.0.1.jar')
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testCompileOnly files('libs/MiniGameCore-2.0.1.jar')
+}
+
+test {
+    useJUnitPlatform()
 }
 
 tasks {
     runServer {
-        // Configure the Minecraft version for our task.
-        // This is the only required configuration besides applying the plugin.
-        // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21")
+        // The Minecraft version for the dev server. Your plugin's jar is added automatically.
+        // Must be >= 1.21.6: MiniGameCore 2.0.1 uses the GameRule.LOCATOR_BAR field added in 1.21.6,
+        // so older servers throw NoSuchFieldError on `/mg host`. The human client must match this.
+        minecraftVersion("1.21.9")
+
+        // BedWars needs MiniGameCore at runtime. pluginJars copies it into run/plugins/ on every
+        // launch (run-paper 2.3.1 API), so a fresh `./gradlew runServer` is always self-contained.
+        pluginJars(file("libs/MiniGameCore-2.0.1.jar"))
+
+        // run-paper 2.3.1 has no EULA / server.properties DSL, so seed the run dir ourselves.
+        // This makes the server start unattended (EULA accepted) and joinable by offline bots.
+        doFirst {
+            def runDir = runDirectory.get().asFile
+            runDir.mkdirs()
+            new File(runDir, "eula.txt").text = "eula=true\n"
+            def props = new File(runDir, "server.properties")
+            if (!props.exists()) {
+                props.text = '''\
+                    online-mode=false
+                    server-port=25565
+                    spawn-protection=0
+                    allow-flight=true
+                    difficulty=normal
+                    max-players=20
+                    motd=BedWars Dev Server
+                    '''.stripIndent()
+            }
+
+            // MiniGameCore's /mg subcommands (host/join/ready/start/confirm) are op-only by default.
+            // Op the dev bots so they can drive a match. Offline-mode UUIDs are computed exactly like
+            // Bukkit's getOfflinePlayer(name). The host bot ops the human player at runtime via /op.
+            def opNames = ["BW_Host"] + (1..12).collect { "BW_Bot${it}" }
+            def opEntries = opNames.collect { n ->
+                def uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + n).getBytes("UTF-8")).toString()
+                "  {\"uuid\": \"${uuid}\", \"name\": \"${n}\", \"level\": 4, \"bypassesPlayerLimit\": false}"
+            }
+            new File(runDir, "ops.json").text = "[\n" + opEntries.join(",\n") + "\n]\n"
+        }
     }
 }
 

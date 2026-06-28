@@ -103,6 +103,10 @@ $RECYCLE.BIN/
 .gradle
 build/
 
+# Node deps for the dev bot harness
+node_modules/
+tools/bots/node_modules/
+
 # Ignore Gradle GUI config
 gradle-app.setting
 
@@ -117,3 +121,7 @@ runs/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
+
+# Vendored compile-only dependencies (not published to a reliable Maven repo)
+!libs/
+!libs/*.jar

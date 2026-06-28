@@ -13,6 +13,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import wueffi.BedWars.generic.EliminationTracker;
 import wueffi.MiniGameCore.api.MiniGameCoreAPI;
 import wueffi.MiniGameCore.managers.LobbyManager;
 import wueffi.MiniGameCore.utils.Lobby;
@@ -29,13 +30,15 @@ public class PlayerDeathEvent implements Listener {
     private Map<String, Boolean> bedStatus;
     private final BedChecker bedChecker;
     private final ShopListener shopListener;
+    private final EliminationTracker eliminationTracker;
 
-    public PlayerDeathEvent(Plugin plugin, Lobby lobby, BedChecker bedChecker, ShopListener shopListener) {
+    public PlayerDeathEvent(Plugin plugin, Lobby lobby, BedChecker bedChecker, ShopListener shopListener, EliminationTracker eliminationTracker) {
         this.plugin = plugin;
         this.lobby = lobby;
         this.bedStatus = bedChecker.getBedStatus();
         this.bedChecker = bedChecker;
         this.shopListener = shopListener;
+        this.eliminationTracker = eliminationTracker;
     }
 
     @EventHandler
@@ -79,6 +82,7 @@ public class PlayerDeathEvent implements Listener {
             }.runTaskTimer(plugin, 0L, 20L);
         } else {
             player.sendTitle("§c§lYOU DIED!", "§7Your bed is broken!", 0, 60, 20);
+            eliminationTracker.eliminate(player.getUniqueId());
             MiniGameCoreAPI.playerDeath(player.getUniqueId());
         }
     }

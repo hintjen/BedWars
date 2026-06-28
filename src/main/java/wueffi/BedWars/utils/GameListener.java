@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.scheduler.BukkitTask;
 import wueffi.BedWars.generic.checkWins;
+import wueffi.BedWars.generic.EliminationTracker;
 import wueffi.MiniGameCore.api.GameStartEvent;
 import wueffi.MiniGameCore.api.GameOverEvent;
 import wueffi.MiniGameCore.api.MiniGameCoreAPI;
@@ -33,6 +34,7 @@ public class GameListener implements Listener {
     private final Map<Lobby, checkWins> winCheckers = new HashMap<>();
     private final Map<Lobby, BedChecker> bedCheckers = new HashMap<>();
     private final Map<Lobby, Generators> generators = new HashMap<>();
+    private final Map<Lobby, EliminationTracker> eliminationTrackers = new HashMap<>();
     private final Map<Lobby, BukkitTask> startupTasks = new HashMap<>();
 
     public GameListener(Plugin plugin) {
@@ -67,7 +69,10 @@ public class GameListener implements Listener {
             sListeners.put(lobby, sl);
             Bukkit.getPluginManager().registerEvents(sl, plugin);
 
-            checkWins wc = new checkWins(plugin, lobby, bc);
+            EliminationTracker et = new EliminationTracker();
+            eliminationTrackers.put(lobby, et);
+
+            checkWins wc = new checkWins(plugin, lobby, bc, et);
             winCheckers.put(lobby, wc);
             wc.startChecking();
 
@@ -103,7 +108,7 @@ public class GameListener implements Listener {
             shl.registerShopKeeper(yellowTeamShop, "Yellow", true);
             shl.registerShopKeeper(greenTeamShop, "Green", true);
 
-            PlayerDeathEvent dl = new PlayerDeathEvent(plugin, lobby, bc, shl);
+            PlayerDeathEvent dl = new PlayerDeathEvent(plugin, lobby, bc, shl, et);
             deathListeners.put(lobby, dl);
             Bukkit.getPluginManager().registerEvents(dl, plugin);
 
@@ -166,6 +171,8 @@ public class GameListener implements Listener {
 
             Generators gen = generators.remove(lobby);
             if (gen != null) gen.stopGenerators();
+
+            eliminationTrackers.remove(lobby);
 
             BedBreakListener bbl = bedBreakListeners.remove(lobby);
             if (bbl != null) HandlerList.unregisterAll(bbl);

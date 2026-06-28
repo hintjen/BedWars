@@ -1,0 +1,13 @@
+{
+  "name": "bedwars-bots",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Filler bots that join a local BedWars dev server and start a match.",
+  "type": "commonjs",
+  "scripts": {
+    "swarm": "node swarm.js"
+  },
+  "dependencies": {
+    "mineflayer": "^4.20.0"
+  }
+}
