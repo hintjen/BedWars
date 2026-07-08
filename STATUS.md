@@ -26,6 +26,7 @@ future work. Companion docs: [TESTING.md](TESTING.md), [BUILDING-Windows.md](BUI
 | Win/elimination logic | ✅ Verified | 5 unit tests (`WinEvaluatorTest`), pass on Java 21 and Java 25 |
 | Default build `1.21.9` / Java 21 | ✅ Verified | `./gradlew build` green |
 | Default build on **Windows 11** | ✅ Verified | `.\gradlew.bat build` green on a clean checkout (2026-07-07); JDK 21.0.7, Node 25.6, Git 2.52 — see [BUILDING-Windows.md](BUILDING-Windows.md) |
+| `runServer` boot + bot swarm connect on **Windows 11** | ✅ Verified | `.\gradlew.bat runServer` reached `Done (...)!` with 0 plugin errors; `swarm.js` host + 3 bots joined (2026-07-07). Full match start (human join → `Game Started!`) not re-confirmed on Windows this pass — see the 1.21.x row above, verified previously on macOS/Linux |
 | Modern build `26.2` / Java 25 | ✅ Verified | `./gradlew build -Pmc=26.2` compiles + tests pass (bytecode = Java 25) |
 | Plugin loads/enables on **1.21.x** | ✅ Verified | dev server boots both plugins, 0 errors |
 | Plugin loads/enables on **26.2** | ✅ Verified | `runServer -Pmc=26.2` boots both plugins on Java 25, 0 errors |
@@ -60,6 +61,9 @@ future work. Companion docs: [TESTING.md](TESTING.md), [BUILDING-Windows.md](BUI
 - **MiniGameCore is vendored**, not pulled from a working repo — upgrade by dropping a new jar in
   `libs/` and updating the filename in `build.gradle`.
 - **Solo match start** on a no-bots server depends on MiniGameCore's minimum-player setting (unverified).
+- **Windows: a stale `netsh portproxy` rule can steal port 25565** — seen on one machine, left over from a
+  prior WSL-hosted server, and requires an elevated shell to remove. See the troubleshooting table in
+  [BUILDING-Windows.md](BUILDING-Windows.md).
 
 ## Future work
 
