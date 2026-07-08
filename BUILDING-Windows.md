@@ -13,7 +13,7 @@ a local test server with filler bots. macOS/Linux users: the same Gradle command
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| **JDK** | **21** | Required to build. [Eclipse Temurin 21](https://adoptium.net/temurin/releases/?version=21) is recommended. During install, enable "Set JAVA_HOME" and "Add to PATH". |
+| **JDK** | **21** | Needed to launch Gradle and build the default (1.21.x) target. [Eclipse Temurin 21](https://adoptium.net/temurin/releases/?version=21) recommended; enable "Set JAVA_HOME" and "Add to PATH". For the **26.x** target, Gradle **auto-downloads Java 25** — no manual install (see §6). |
 | **Git** | any | [git-scm.com](https://git-scm.com/download/win) (or download the repo as a ZIP). |
 | **Node.js** | 18+ | *Only* needed for the optional test bots. [nodejs.org](https://nodejs.org). |
 | **Minecraft: Java Edition** | **1.21.9** | *Only* needed if you want to play/test locally. Must match the server version (see note below). |
@@ -35,11 +35,15 @@ its `bin` folder is first on your `PATH`, or set `JAVA_HOME` to the JDK 21 folde
 ## 2. Get the code
 
 ```powershell
-git clone https://github.com/hintjen/BedWars.git
+git clone -b bedwars-winfix-and-playtest-workflow https://github.com/hintjen/BedWars.git
 cd BedWars
 ```
 
-(If you downloaded a ZIP instead, extract it and `cd` into the folder.)
+> The build tooling and this guide currently live on the **`bedwars-winfix-and-playtest-workflow`**
+> branch (the `-b` flag checks it out). Once that branch is merged into `main`, a plain
+> `git clone https://github.com/hintjen/BedWars.git` will work too.
+
+(If you downloaded a ZIP instead, make sure you grabbed the correct branch, then `cd` into the folder.)
 
 The required MiniGameCore dependency is **already vendored** in `libs\MiniGameCore-2.0.1.jar`, so you
 do not need to download anything else to build.
@@ -142,6 +146,32 @@ fresh.
 
 ---
 
+## 6. Targeting Minecraft 26.x (e.g. 26.2)
+
+Everything above uses the default **1.21.9 / Java 21** profile. To target the latest Minecraft, add
+`-Pmc=26.2` to any Gradle command. Gradle then **auto-downloads Java 25** (Minecraft 26.x requires it)
+— you do **not** need to install JDK 25 yourself.
+
+```powershell
+.\gradlew.bat build -Pmc=26.2                       # build against the 26.2 API on Java 25
+.\gradlew.bat runServer -Pmc=26.2 -PdevOp=<YourName> # boot a Paper 26.2 dev server, op yourself
+```
+
+Then connect with a **Minecraft Java Edition 26.2** client to `localhost:25565` and `/mg host BedWars`.
+
+Notes / limitations:
+- **The bots can't fill teams on 26.x yet** — mineflayer doesn't speak the 26.x protocol, so
+  `playtest.js` / `swarm.js` are **1.21.x only**. On 26.x you test manually (bring real players, or see
+  the ViaVersion option in [tools\bots\MINEFLAYER-26X.md](tools/bots/MINEFLAYER-26X.md)). `-PdevOp`
+  exists because the bots normally `/op` you and can't here.
+- A 26.x jar (Java 25) **won't run on a 1.21.x/Java 21 server**, and vice-versa — build for your target.
+- `paper-api` for 26.2 is alpha; 26.2 is bleeding edge. Current verification status (26.2 **builds,
+  loads and enables**; live gameplay not yet confirmed) is tracked in [STATUS.md](STATUS.md).
+- Switching `-Pmc` versions may trigger a one-time Paper world migration in `run\`; delete `run\` to
+  start fresh.
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -152,3 +182,5 @@ fresh.
 | Bots say "You don't have permission" | `runServer` pre-ops the bots automatically. If you point the bots at your *own* server instead, op them (`/op BW_Host`, `/op BW_Bot1` …) or give them `mgcore.admin`. |
 | Can't connect / "Failed to connect" | Confirm the server window shows `Done (...)`, your client is exactly **1.21.9**, and you used `localhost:25565`. Allow Java through the Windows Firewall (Private networks) if prompted. |
 | Bots fail to connect after a Minecraft update | Update mineflayer: in `tools\bots` run `npm install mineflayer@latest`, or pass `--version false` to auto-detect. |
+| First `-Pmc=26.2` build is slow or seems stuck | Normal on first run — Gradle is downloading JDK 25 and the Paper 26.2 server. Give it a minute; needs internet. |
+| Bots won't join a **26.x** server | Expected — mineflayer has no 26.x protocol support. Use the 1.21.x profile for bots, or test 26.x manually. See [tools\bots\MINEFLAYER-26X.md](tools/bots/MINEFLAYER-26X.md). |
