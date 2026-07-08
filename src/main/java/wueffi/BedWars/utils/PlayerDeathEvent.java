@@ -21,8 +21,6 @@ import wueffi.MiniGameCore.utils.Team;
 
 import java.util.Map;
 
-import static wueffi.BedWars.utils.ShopListener.currentSharpnessLevel;
-
 public class PlayerDeathEvent implements Listener {
 
     private final Plugin plugin;
@@ -111,8 +109,8 @@ public class PlayerDeathEvent implements Listener {
         player.getInventory().setItemInOffHand(null);
 
         ItemStack sword = new ItemStack(Material.WOODEN_SWORD);
-        if (!currentSharpnessLevel.containsKey(team)) shopListener.setUpTeamLevels(team);
-        if (currentSharpnessLevel.get(team) == 1) sword.addEnchantment(Enchantment.SHARPNESS, 1);
+        if (!shopListener.hasTeamLevels(team)) shopListener.setUpTeamLevels(team);
+        if (shopListener.getSharpnessLevel(team) == 1) sword.addEnchantment(Enchantment.SHARPNESS, 1);
         player.getInventory().setItem(0, sword);
 
         if (hasPickaxe) {

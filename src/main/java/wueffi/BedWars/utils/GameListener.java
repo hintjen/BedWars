@@ -36,6 +36,7 @@ public class GameListener implements Listener {
     private final Map<Lobby, Generators> generators = new HashMap<>();
     private final Map<Lobby, EliminationTracker> eliminationTrackers = new HashMap<>();
     private final Map<Lobby, BukkitTask> startupTasks = new HashMap<>();
+    private final Map<Lobby, ShopKeeper> shopKeeperTrackers = new HashMap<>();
 
     public GameListener(Plugin plugin) {
         this.plugin = plugin;
@@ -88,20 +89,23 @@ public class GameListener implements Listener {
             blockListeners.put(lobby, bl);
             Bukkit.getPluginManager().registerEvents(bl, plugin);
 
-            Villager redShop = ShopKeeper.spawnShopKeeper(new Location(world, -5.5, 66, 80), "Red", world, 270, false);
-            Villager blueShop = ShopKeeper.spawnShopKeeper(new Location(world, -79, 66, -5.5), "Blue", world, 0, false);
-            Villager yellowShop = ShopKeeper.spawnShopKeeper(new Location(world, 6.5, 66, -79), "Yellow", world, 90, false);
-            Villager greenShop = ShopKeeper.spawnShopKeeper(new Location(world, 80, 66, 6.5), "Green", world, 180, false);
+            ShopKeeper shopKeeper = new ShopKeeper(plugin, lobby);
+            shopKeeperTrackers.put(lobby, shopKeeper);
+
+            Villager redShop = shopKeeper.spawnShopKeeper(new Location(world, -5.5, 66, 80), "Red", world, 270, false);
+            Villager blueShop = shopKeeper.spawnShopKeeper(new Location(world, -79, 66, -5.5), "Blue", world, 0, false);
+            Villager yellowShop = shopKeeper.spawnShopKeeper(new Location(world, 6.5, 66, -79), "Yellow", world, 90, false);
+            Villager greenShop = shopKeeper.spawnShopKeeper(new Location(world, 80, 66, 6.5), "Green", world, 180, false);
 
             shl.registerShopKeeper(redShop, "Red", false);
             shl.registerShopKeeper(blueShop, "Blue", false);
             shl.registerShopKeeper(yellowShop, "Yellow", false);
             shl.registerShopKeeper(greenShop, "Green", false);
 
-            Villager redTeamShop = ShopKeeper.spawnShopKeeper(new Location(world, 6.5, 66, 80), "Red", world, 90, true);
-            Villager blueTeamShop = ShopKeeper.spawnShopKeeper(new Location(world, -79, 66, 6.5), "Blue", world, 180, true);
-            Villager yellowTeamShop = ShopKeeper.spawnShopKeeper(new Location(world, -5.5, 66, -79), "Yellow", world, 270, true);
-            Villager greenTeamShop = ShopKeeper.spawnShopKeeper(new Location(world, 80, 66, -5.5), "Green", world, 0, true);
+            Villager redTeamShop = shopKeeper.spawnShopKeeper(new Location(world, 6.5, 66, 80), "Red", world, 90, true);
+            Villager blueTeamShop = shopKeeper.spawnShopKeeper(new Location(world, -79, 66, 6.5), "Blue", world, 180, true);
+            Villager yellowTeamShop = shopKeeper.spawnShopKeeper(new Location(world, -5.5, 66, -79), "Yellow", world, 270, true);
+            Villager greenTeamShop = shopKeeper.spawnShopKeeper(new Location(world, 80, 66, -5.5), "Green", world, 0, true);
 
             shl.registerShopKeeper(redTeamShop, "Red", true);
             shl.registerShopKeeper(blueTeamShop, "Blue", true);
@@ -173,6 +177,9 @@ public class GameListener implements Listener {
             if (gen != null) gen.stopGenerators();
 
             eliminationTrackers.remove(lobby);
+
+            ShopKeeper shopKeeper = shopKeeperTrackers.remove(lobby);
+            if (shopKeeper != null) shopKeeper.removeAll();
 
             BedBreakListener bbl = bedBreakListeners.remove(lobby);
             if (bbl != null) HandlerList.unregisterAll(bbl);

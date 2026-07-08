@@ -13,14 +13,14 @@ public class ShopKeeper {
 
     private final Plugin plugin;
     private final Lobby lobby;
-    private static final List<Villager> shopKeepers = new ArrayList<>();
+    private final List<Villager> shopKeepers = new ArrayList<>();
 
     public ShopKeeper(Plugin plugin, Lobby lobby) {
         this.plugin = plugin;
         this.lobby = lobby;
     }
 
-    public static Villager spawnShopKeeper(Location loc, String color, World world, float yaw, boolean teamShop) {
+    public Villager spawnShopKeeper(Location loc, String color, World world, float yaw, boolean teamShop) {
         loc.setYaw(yaw);
         Villager villager = (Villager) world.spawnEntity(loc, EntityType.VILLAGER);
         if (teamShop) villager.setCustomName(getChatColor(color) + color + " Team " + " Shop");

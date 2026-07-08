@@ -77,7 +77,7 @@ tasks {
             // MiniGameCore's /mg subcommands (host/join/ready/start/confirm) are op-only by default.
             // Op the dev bots so they can drive a match. Offline-mode UUIDs are computed exactly like
             // Bukkit's getOfflinePlayer(name). The host bot ops the human player at runtime via /op.
-            def opNames = ["BW_Host"] + (1..12).collect { "BW_Bot${it}" }
+            def opNames = ["BW_Host"] + (1..12).collect { "BW_Bot${it}" } + ["HomerunDesktop", "shoraibit"]
             // Also op a human dev player when requested, e.g. -PdevOp=HomerunDesktop. Needed on the
             // 26.x track where the bots (which normally /op the human) can't connect yet.
             def devOp = project.findProperty('devOp')

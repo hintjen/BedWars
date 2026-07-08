@@ -25,12 +25,12 @@ public class ShopListener implements Listener {
 
     private final Plugin plugin;
     private final Map<UUID, Inventory> shopInventories = new HashMap<>();
-    private static Map<UUID, String> villagerColors = new HashMap<>();
-    private static List<UUID> teamShops = new ArrayList<>();
+    private final Map<UUID, String> villagerColors = new HashMap<>();
+    private final List<UUID> teamShops = new ArrayList<>();
 
-    static Map<Team, Integer> currentSharpnessLevel = new HashMap<>();
-    private static Map<Team, Integer> currentProtectionLevel = new HashMap<>();
-    private static Map<Team, Integer> currentForgeLevel = new HashMap<>();
+    private final Map<Team, Integer> currentSharpnessLevel = new HashMap<>();
+    private final Map<Team, Integer> currentProtectionLevel = new HashMap<>();
+    private final Map<Team, Integer> currentForgeLevel = new HashMap<>();
 
     public ShopListener(Plugin plugin) {
         this.plugin = plugin;
@@ -462,6 +462,14 @@ public class ShopListener implements Listener {
 
     public int getForgeLevel(Team team) {
         return currentForgeLevel.get(team);
+    }
+
+    public boolean hasTeamLevels(Team team) {
+        return currentSharpnessLevel.containsKey(team);
+    }
+
+    public int getSharpnessLevel(Team team) {
+        return currentSharpnessLevel.getOrDefault(team, 0);
     }
 
     public void setUpTeamLevels(Team team) {
