@@ -4,6 +4,11 @@ This guide covers building the BedWars plugin from source on Windows, plus (opti
 a local test server with filler bots. macOS/Linux users: the same Gradle commands apply, just use
 `./gradlew` instead of `.\gradlew.bat`.
 
+> **Validated 2026-07-07** on Windows 11 — a clean checkout + `.\gradlew.bat build` (default
+> `1.21.9`/Java 21 profile) succeeded end-to-end with no extra setup, producing
+> `build\libs\BedWars-1.0.jar`. See [STATUS.md](STATUS.md) for the full verification matrix (the
+> `runServer`/bot flow and the `-Pmc=26.2` profile are validated separately, not re-checked this pass).
+
 > All commands below are written for **PowerShell** (the default terminal in Windows 10/11). In the
 > classic Command Prompt (`cmd.exe`), drop the leading `.\` — e.g. type `gradlew.bat build`.
 
@@ -13,7 +18,7 @@ a local test server with filler bots. macOS/Linux users: the same Gradle command
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| **JDK** | **21** | Needed to launch Gradle and build the default (1.21.x) target. [Eclipse Temurin 21](https://adoptium.net/temurin/releases/?version=21) recommended; enable "Set JAVA_HOME" and "Add to PATH". For the **26.x** target, Gradle **auto-downloads Java 25** — no manual install (see §6). |
+| **JDK** | **21** | Needed to launch Gradle and build the default (1.21.x) target. Any JDK 21 distribution works (Temurin, Oracle, Microsoft Build of OpenJDK, etc.) as long as it's first on `PATH` — [Eclipse Temurin 21](https://adoptium.net/temurin/releases/?version=21) is just the recommended one if you don't already have one; enable "Set JAVA_HOME" and "Add to PATH" during install. For the **26.x** target, Gradle **auto-downloads Java 25** — no manual install (see §6). |
 | **Git** | any | [git-scm.com](https://git-scm.com/download/win) (or download the repo as a ZIP). |
 | **Node.js** | 18+ | *Only* needed for the optional test bots. [nodejs.org](https://nodejs.org). |
 | **Minecraft: Java Edition** | **1.21.9** | *Only* needed if you want to play/test locally. Must match the server version (see note below). |
@@ -35,15 +40,11 @@ its `bin` folder is first on your `PATH`, or set `JAVA_HOME` to the JDK 21 folde
 ## 2. Get the code
 
 ```powershell
-git clone -b bedwars-winfix-and-playtest-workflow https://github.com/hintjen/BedWars.git
+git clone https://github.com/hintjen/BedWars.git
 cd BedWars
 ```
 
-> The build tooling and this guide currently live on the **`bedwars-winfix-and-playtest-workflow`**
-> branch (the `-b` flag checks it out). Once that branch is merged into `main`, a plain
-> `git clone https://github.com/hintjen/BedWars.git` will work too.
-
-(If you downloaded a ZIP instead, make sure you grabbed the correct branch, then `cd` into the folder.)
+(If you downloaded a ZIP instead, just `cd` into the extracted folder.)
 
 The required MiniGameCore dependency is **already vendored** in `libs\MiniGameCore-2.0.1.jar`, so you
 do not need to download anything else to build.
@@ -61,6 +62,11 @@ This compiles the plugin, runs the unit tests, and produces the jar at:
 ```
 build\libs\BedWars-1.0.jar
 ```
+
+> **First run is slower (~1-2 min)** — Gradle bootstraps itself by downloading its own distribution
+> (`gradle-8.14.3-bin.zip`, via the `gradlew.bat` wrapper) before it can even start, on top of fetching
+> the Paper API. This is a one-time cost per machine; a subsequent Gradle Daemon makes later builds
+> much faster. No action needed — just don't assume it's hung.
 
 Useful variants:
 

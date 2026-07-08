@@ -1,6 +1,7 @@
 # Project status, verification & known limitations
 
-_Last updated: 2026-06-28. Scope: the `bedwars-winfix-and-playtest-workflow` branch._
+_Last updated: 2026-07-07. Scope: `main` (the `bedwars-winfix-and-playtest-workflow` branch has been
+merged — it is the same commit as `main`)._
 
 A snapshot of what's been changed, **what's actually verified vs assumed**, current limitations, and
 future work. Companion docs: [TESTING.md](TESTING.md), [BUILDING-Windows.md](BUILDING-Windows.md),
@@ -24,6 +25,7 @@ future work. Companion docs: [TESTING.md](TESTING.md), [BUILDING-Windows.md](BUI
 |------|--------|-----|
 | Win/elimination logic | ✅ Verified | 5 unit tests (`WinEvaluatorTest`), pass on Java 21 and Java 25 |
 | Default build `1.21.9` / Java 21 | ✅ Verified | `./gradlew build` green |
+| Default build on **Windows 11** | ✅ Verified | `.\gradlew.bat build` green on a clean checkout (2026-07-07); JDK 21.0.7, Node 25.6, Git 2.52 — see [BUILDING-Windows.md](BUILDING-Windows.md) |
 | Modern build `26.2` / Java 25 | ✅ Verified | `./gradlew build -Pmc=26.2` compiles + tests pass (bytecode = Java 25) |
 | Plugin loads/enables on **1.21.x** | ✅ Verified | dev server boots both plugins, 0 errors |
 | Plugin loads/enables on **26.2** | ✅ Verified | `runServer -Pmc=26.2` boots both plugins on Java 25, 0 errors |
