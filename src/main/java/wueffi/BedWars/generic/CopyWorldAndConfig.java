@@ -12,13 +12,31 @@ import java.util.zip.ZipInputStream;
 
 public class CopyWorldAndConfig {
 
+    /**
+     * Registers BedWars in MiniGameCore's {@code available-games} config. Call this from
+     * {@code onLoad()} so it runs before MiniGameCore's {@code onEnable} reads & caches that list.
+     */
+    public static void registerGame(Plugin plugin) {
+        try {
+            // Ensure MiniGameCore's own default config exists first (its plugin instance is loaded
+            // before ours via `depend`), so we merge into a complete config rather than creating a
+            // partial one that would omit MiniGameCore's other defaults.
+            Plugin miniGameCore = plugin.getServer().getPluginManager().getPlugin("MiniGameCore");
+            if (miniGameCore != null) {
+                miniGameCore.saveDefaultConfig();
+            }
+            updateMiniGameCoreConfig(plugin);
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error registering BedWars with MiniGameCore", e);
+        }
+    }
+
     public static void setup(Plugin plugin) {
         try {
             copyWorldFromResources(plugin);
-            updateMiniGameCoreConfig(plugin);
-            plugin.getLogger().info("BedWars world and config setup!");
+            plugin.getLogger().info("BedWars world setup!");
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Error setting up BedWars world and config", e);
+            plugin.getLogger().log(Level.SEVERE, "Error setting up BedWars world", e);
         }
     }
 
